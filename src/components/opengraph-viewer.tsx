@@ -1,151 +1,134 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Navbar } from "./navbar"
-import { CardGrid } from "./card-grid"
-import { Pagination } from "./pagination"
-import type { OpenGraphCard } from "../types/opengraph"
-
-// Sample data for demonstration
-const initialCards: OpenGraphCard[] = [
-  {
-    id: "1",
-    title: "Next.js by Vercel - The React Framework",
-    url: "https://nextjs.org",
-    type: "website",
-    description:
-      "The React Framework for the Web. Used by some of the world's largest companies, Next.js enables you to create full-stack web applications by extending the latest React features.",
-    image: "",
-  },
-  {
-    id: "2",
-    title: "React – A JavaScript library for building user interfaces",
-    url: "https://react.dev",
-    type: "website",
-    description:
-      "React is the library for web and native user interfaces. Build user interfaces out of individual pieces called components written in JavaScript.",
-    image: "https://react.dev/images/og-home.png",
-  },
-  {
-    id: "3",
-    title: "Vercel: Build and deploy the best Web experiences with The Frontend Cloud",
-    url: "https://vercel.com",
-    type: "website",
-    description:
-      "Vercel's Frontend Cloud gives developers the frameworks, workflows, and infrastructure to build a faster, more personalized Web.",
-    image: "https://assets.vercel.com/image/upload/front/vercel/dps.png",
-  },
-  {
-    id: "4",
-    title: "Tailwind CSS - Rapidly build modern websites without ever leaving your HTML",
-    url: "https://tailwindcss.com",
-    type: "website",
-    description:
-      "A utility-first CSS framework packed with classes like flex, pt-4, text-center and rotate-90 that can be composed to build any design, directly in your markup.",
-    image: "https://tailwindcss.com/api/og",
-  },
-  {
-    id: "5",
-    title: "GitHub: Let's build from here",
-    url: "https://github.com",
-    type: "website",
-    description:
-      "GitHub is where over 100 million developers shape the future of software, together. Contribute to the open source community, manage your Git repositories.",
-    image: "https://github.githubassets.com/images/modules/site/social-cards/github-social.png",
-  },
-  {
-    id: "6",
-    title: "Stack Overflow - Where Developers Learn, Share, & Build Careers",
-    url: "https://stackoverflow.com",
-    type: "website",
-    description:
-      "Stack Overflow is the largest, most trusted online community for developers to learn, share their programming knowledge, and build their careers.",
-    image: "https://cdn.sstatic.net/Sites/stackoverflow/Img/apple-touch-icon@2.png",
-  },
-  {
-    id: "7",
-    title: "MDN Web Docs",
-    url: "https://developer.mozilla.org",
-    type: "website",
-    description:
-      "The MDN Web Docs site provides information about Open Web technologies including HTML, CSS, and APIs for both Web sites and progressive web apps.",
-    image: "https://developer.mozilla.org/mdn-social-share.png",
-  },
-  {
-    id: "8",
-    title: "TypeScript: JavaScript with syntax for types",
-    url: "https://www.typescriptlang.org",
-    type: "website",
-    description:
-      "TypeScript is a strongly typed programming language that builds on JavaScript, giving you better tooling at any scale.",
-    image: "https://www.typescriptlang.org/images/branding/og-image.png",
-  },
-  {
-    id: "9",
-    title: "Visual Studio Code - Code Editing. Redefined",
-    url: "https://code.visualstudioasddsaadsasdasdsdaasdasd.com",
-    type: "website",
-    description:
-      "Visual Studio Code is a code editor redefined and optimized for building and debugging modern web and cloud applications.",
-    image: "https://code.visualstudio.com/opengraphimg/opengraph-home.png",
-  },
-]
+import { useState } from "react";
+import { Navbar } from "@/components/navbar";
+import { OpenGraphCard } from "@/components/card";
+import { Pagination } from "@/components/pagination";
+import { Sidebar } from "@/components/sidebar";
+import { UrlProvider } from "@/context/url-context";
+import { EmptyState } from "@/components/empty-state";
+import type { IOpenGraphCard } from "@/types/opengraph";
 
 export function OpenGraphViewer() {
-  const [cards, setCards] = useState<OpenGraphCard[]>(initialCards)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchUrl, setSearchUrl] = useState("")
-  const cardsPerPage = 4 * 5;
+	// const [searchQuery, setSearchQuery] = useState("")
+	const [currentData, setCurrentData] = useState<IOpenGraphCard[]>([]);
+	const [currentPage, setCurrentPage] = useState(1);
+	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+	const [sidebarWidth, setSidebarWidth] = useState(256); // Default width of 256px (16rem)
+	const [isLoading, setIsLoading] = useState(false);
 
-  // Get current cards
-  const indexOfLastCard = currentPage * cardsPerPage
-  const indexOfFirstCard = indexOfLastCard - cardsPerPage
-  const currentCards = cards.slice(indexOfFirstCard, indexOfLastCard)
-  const totalPages = Math.ceil(cards.length / cardsPerPage)
+	const itemsPerPage = 8;
+	const totalPages = Math.ceil(currentData.length / itemsPerPage);
 
-  const handleSearch = async (url: string) => {
-    // In a real application, this would fetch OpenGraph data from an API
-    // For now, we'll just add a placeholder card
-    if (url) {
-      try {
-        // Simulate fetching OpenGraph data
-        // In a real app, you would make an API call here
-        const newCard: OpenGraphCard = {
-          id: `${cards.length + 1}`,
-          title: `New page from ${url}`,
-          url: url,
-          type: "website",
-          description: "This is a placeholder for a fetched OpenGraph card.",
-          image: "https://via.placeholder.com/1200x600",
-        }
+	// const currentData = allSampleData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
-        setCards([newCard, ...cards])
-        setCurrentPage(1)
-        setSearchUrl("")
-      } catch (error) {
-        console.error("Error fetching OpenGraph data:", error)
-      }
-    }
-  }
+	const handleSearch = (query: string) => {
+		setIsLoading(true);
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar
-        searchUrl={searchUrl}
-        setSearchUrl={setSearchUrl}
-        handleSearch={handleSearch}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
+		fetch(query)
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error("Network response was not ok");
+				}
+				return response.json();
+			})
+			.then((data) => {
+				setCurrentData(
+					data.slice(
+						(currentPage - 1) * itemsPerPage,
+						currentPage * itemsPerPage,
+					),
+				);
+			})
+			.catch((error) => {
+				console.error("There was a problem with the fetch operation:", error);
+				setCurrentData([]); // Clear data on error
+			})
+			.finally(() => setIsLoading(false));
+	};
 
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <CardGrid cards={currentCards} />
-      </main>
+	const handlePageChange = (page: number) => {
+		setCurrentPage(page);
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	};
 
-      <footer className="py-6 border-t">
-        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-      </footer>
-    </div>
-  )
+	const toggleSidebar = () => {
+		setIsSidebarOpen(!isSidebarOpen);
+	};
+
+	return (
+		<UrlProvider>
+			<div className="flex min-h-screen flex-col">
+				<Navbar
+					onSearch={handleSearch}
+					currentPage={currentPage}
+					totalPages={Math.max(1, totalPages)}
+					onPageChange={handlePageChange}
+					toggleSidebar={toggleSidebar}
+					isSidebarOpen={isSidebarOpen}
+				/>
+				<div className="flex flex-1 relative">
+					{/* Overlay to close sidebar when clicked */}
+					{isSidebarOpen && (
+						<button
+							className="fixed inset-0 bg-black/20 z-10"
+							onClick={() => setIsSidebarOpen(false)}
+							onKeyDown={(e) => {
+								if (e.key === "b" || e.key === "B") {
+									setIsSidebarOpen(false);
+								}
+							}}
+							aria-label="Close sidebar"
+							type="button"
+						/>
+					)}
+
+					<main
+						className="flex-1 p-4 md:p-6 transition-all duration-300 relative z-0"
+						style={{ marginRight: isSidebarOpen ? `${sidebarWidth}px` : 0 }}
+					>
+						{isLoading ? (
+							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+								{Array.from({ length: itemsPerPage }).map((_, index) => (
+                  <div
+									  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+										key={index}
+										className="h-80 rounded-lg bg-muted animate-pulse"
+									/>
+								))}
+							</div>
+						) : currentData.length === 0 ? (
+							<EmptyState
+								title="No results found"
+								description="Try adjusting your search or enter a new URL to fetch OpenGraph data."
+								action={() => handleSearch("")}
+								actionLabel="Clear search"
+								icon="search"
+							/>
+						) : (
+							<>
+								<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+									{currentData.map((item, index) => (
+										<OpenGraphCard key={`${item.url}-${index}`} data={item} />
+									))}
+								</div>
+								<Pagination
+									currentPage={currentPage}
+									totalPages={totalPages}
+									onPageChange={handlePageChange}
+								/>
+							</>
+						)}
+					</main>
+					<div
+						className={`fixed right-0 top-16 h-[calc(100vh-4rem)] transition-transform duration-300 ease-in-out z-20 ${
+							isSidebarOpen ? "translate-x-0" : "translate-x-full"
+						}`}
+					>
+						<Sidebar width={sidebarWidth} onWidthChange={setSidebarWidth} />
+					</div>
+				</div>
+			</div>
+		</UrlProvider>
+	);
 }

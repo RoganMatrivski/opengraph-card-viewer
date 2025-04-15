@@ -4,19 +4,15 @@ import {
 	Sidebar,
 	SidebarContent,
 	SidebarGroup,
-	SidebarGroupAction,
 	SidebarGroupContent,
 	SidebarGroupLabel,
 	SidebarMenu,
 	SidebarMenuAction,
 	SidebarMenuButton,
 	SidebarMenuItem,
-	SidebarMenuSub,
-	SidebarMenuSubButton,
-	SidebarMenuSubItem,
 	SidebarRail,
 } from "@/components/ui/sidebar";
-import { Plus, Trash } from "lucide-react";
+import { Trash } from "lucide-react";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [data, setData] = React.useState(Array.from({ length: 10 }, () =>

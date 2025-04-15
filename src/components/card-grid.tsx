@@ -1,8 +1,8 @@
-import { Card } from "./card"
-import type { OpenGraphCard } from "../types/opengraph"
+// import { Card } from "./card"
+import type { IOpenGraphCard } from "../types/opengraph"
 
 interface CardGridProps {
-  cards: OpenGraphCard[]
+  cards: IOpenGraphCard[]
 }
 
 export function CardGrid({ cards }: CardGridProps) {
@@ -17,9 +17,9 @@ export function CardGrid({ cards }: CardGridProps) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {cards.map((card) => (
+      {/* {cards.map((card) => (
         <Card key={card.id} card={card} />
-      ))}
+      ))} */}
     </div>
   )
 }

@@ -1,104 +1,158 @@
-"use client";
+import type React from "react"
 
-import type React from "react";
-import { useState } from "react";
-import { Search, Moon, Sun } from "lucide-react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Pagination } from "./pagination";
-import { SidebarTrigger } from "./ui/sidebar";
+import { useState } from "react"
+import { Download, ChevronLeft, ChevronRight, PanelRight, Search } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface NavbarProps {
-  searchUrl: string;
-  setSearchUrl: (url: string) => void;
-  handleSearch: (url: string) => void;
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
+  onSearch: (query: string) => void
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+  toggleSidebar: () => void
+  isSidebarOpen: boolean
 }
 
-export function Navbar({
-  searchUrl,
-  setSearchUrl,
-  handleSearch,
-  currentPage,
-  totalPages,
-  onPageChange,
-}: NavbarProps) {
-  const [darkMode, setDarkMode] = useState(true);
+export function Navbar({ onSearch, currentPage, totalPages, onPageChange, toggleSidebar, isSidebarOpen }: NavbarProps) {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [pageInput, setPageInput] = useState("")
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleSearch(searchUrl);
-  };
+    e.preventDefault()
+    onSearch(searchQuery)
+  }
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle("dark", !darkMode);
-  };
+  const handleGoToPage = () => {
+    const pageNumber = Number.parseInt(pageInput)
+    if (!Number.isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= totalPages) {
+      onPageChange(pageNumber)
+      setIsPopoverOpen(false)
+      setPageInput("")
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleGoToPage()
+    }
+  }
+
+  // Show a limited number of pages with ellipsis
+  const getVisiblePages = () => {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1)
+
+    if (currentPage <= 3) {
+      return [1, 2, 3, 4, 5]
+    }
+
+    if (currentPage >= totalPages - 2) {
+      return [totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+    }
+
+    return [currentPage - 2, currentPage - 1, currentPage, currentPage + 1, currentPage + 2]
+  }
+
+  const visiblePages = getVisiblePages()
 
   return (
-    <header className="border-b sticky top-0 bg-background z-10">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <div className="flex items-center gap-6 md:gap-10">
-            <a href="/" className="flex items-center space-x-2">
-              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary">
-                <span className="text-primary-foreground font-bold text-xl">
-                  OG
-                </span>
-              </div>
-              <span className="hidden md:inline-block font-bold text-xl">
-                OpenGraph Viewer
-              </span>
-            </a>
-
-            <form
-              onSubmit={handleSubmit}
-              className="flex-1 flex items-center gap-2 max-w-md"
-            >
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Enter URL to fetch OpenGraph data"
-                  className="pl-8"
-                  value={searchUrl}
-                  onChange={(e) => setSearchUrl(e.target.value)}
-                />
-              </div>
-              <Button type="submit" className="cursor-pointer">
-                Submit
-              </Button>
-            </form>
+    <nav className="sticky top-0 z-10 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6">
+      <div className="flex items-center gap-4 md:gap-6">
+        <a href="/" className="flex items-center gap-2 font-semibold">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            OG
           </div>
-
-          <div className="flex items-center gap-4">
-            <Button
-              onClick={toggleDarkMode}
-              className="cursor-pointer p-2 rounded-full"
-              aria-label="Toggle Dark Mode"
-            >
-              {darkMode ? (
-                <Sun className="h-5 w-5 text-yellow-700" />
-              ) : (
-                <Moon className="h-5 w-5 text-white" />
-              )}
-            </Button>
-
-            <div className="hidden md:block">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={onPageChange}
-                compact={true}
-              />
-            </div>
-
-            <SidebarTrigger />
-          </div>
-        </div>
+          <span>OpenGraph Viewer</span>
+        </a>
+        <form onSubmit={handleSubmit} className="flex w-full max-w-sm items-center gap-2">
+          <Input
+            type="text"
+            placeholder="Enter URL to fetch..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full"
+          />
+          <Button type="submit" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Load
+          </Button>
+        </form>
       </div>
-    </header>
-  );
+      <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
+            className="h-8 w-8"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Previous page</span>
+          </Button>
+
+          {visiblePages.map((page) => (
+            <Button
+              key={page}
+              variant={currentPage === page ? "default" : "outline"}
+              size="sm"
+              onClick={() => onPageChange(page)}
+              className="h-8 w-8"
+            >
+              {page}
+            </Button>
+          ))}
+
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
+            className="h-8 w-8"
+          >
+            <ChevronRight className="h-4 w-4" />
+            <span className="sr-only">Next page</span>
+          </Button>
+
+          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8">
+                Go to...
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-2">
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  min={1}
+                  max={totalPages}
+                  placeholder={`1-${totalPages}`}
+                  value={pageInput}
+                  onChange={(e) => setPageInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="h-8"
+                />
+                <Button size="sm" className="h-8 px-2" onClick={handleGoToPage}>
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">Enter a page number between 1 and {totalPages}</p>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleSidebar}
+          className="ml-2"
+          aria-label={isSidebarOpen ? "Hide sidebar" : "Show sidebar"}
+        >
+          <PanelRight className={`h-4 w-4 transition-transform ${isSidebarOpen ? "rotate-180" : ""}`} />
+        </Button>
+      </div>
+    </nav>
+  )
 }

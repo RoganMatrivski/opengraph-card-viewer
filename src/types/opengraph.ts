@@ -1,4 +1,4 @@
-export interface OpenGraphCard {
+export interface IOpenGraphCard {
   id: string
   title: string
   url: string

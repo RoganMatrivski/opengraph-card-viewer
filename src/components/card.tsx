@@ -1,75 +1,74 @@
-import { ExternalLink } from "lucide-react";
-import { Card as CardUI, CardContent, CardFooter, CardHeader } from "./ui/card";
-import { Badge } from "./ui/badge";
-import type { OpenGraphCard } from "../types/opengraph";
+import { PlusCircle, ExternalLink, Check } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useUrls } from "@/context/url-context"
 
-interface CardProps {
-	card: OpenGraphCard;
+interface OpenGraphData {
+  title: string
+  url: string
+  type: string
+  description?: string
+  image?: string
 }
 
-export function Card({ card }: CardProps) {
-	const { title, url, type, description, image } = card;
-	const domain = new URL(url).hostname;
+export function OpenGraphCard({ data }: { data: OpenGraphData }) {
+  const { addUrl, hasUrl } = useUrls()
+  const isAdded = hasUrl(data.url)
 
-	return (
-		<CardUI className="overflow-hidden flex flex-col h-full py-0 pb-6">
-			<div className="relative h-48 w-full overflow-hidden group">
-				{image ? (
-					<img
-						src={image}
-						alt={title}
-						className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:blur-sm"
-					/>
-				) : (
-					<div className="absolute inset-0 w-full h-full flex items-center justify-center bg-gray-200 text-gray-500">
-						<span>No Image Available</span>
-					</div>
-				)}
-				<div className="absolute inset-0 bg-transparent bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-					<div className="relative w-full h-full flex">
-						<a
-							href={url}
-							target="_blank"
-							rel="noopener noreferrer"
-							className="w-1/2 h-full bg-black/30 hover:bg-black/50 text-white text-sm flex items-center justify-center"
-						>
-							Visit
-						</a>
-						<button
-							onClick={() => alert("Action triggered!")}
-							className="cursor-pointer w-1/2 h-full bg-black/30 hover:bg-black/50 text-white text-sm flex items-center justify-center"
-							type="button"
-						>
-							Action
-						</button>
-					</div>
-				</div>
-			</div>
+  const handleAddToSidebar = () => {
+    addUrl(data.url, data.title)
+  }
 
-			<CardHeader className="flex flex-col space-y-1.5">
-				<div className="flex items-start justify-between">
-					<h3 className="font-semibold text-lg line-clamp-2" title={title}>
-						{title}
-					</h3>
-					<Badge variant="outline" className="ml-2 shrink-0">
-						{type}
-					</Badge>
-				</div>
-			</CardHeader>
-
-			<CardContent className="flex-grow">
-				{description && (
-					<p className="text-muted-foreground text-sm line-clamp-3 mb-4">
-						{description}
-					</p>
-				)}
-			</CardContent>
-
-			<CardFooter className="flex justify-between items-center pt-2">
-				<span className="text-xs text-muted-foreground truncate max-w-[70%]">
-					{domain}
-				</span>
-			</CardFooter>
-		</CardUI>
-	);
+  return (
+    <Card className="overflow-hidden flex flex-col">
+      {data.image && (
+        <div className="aspect-video w-full overflow-hidden">
+          <img src={data.image || "/placeholder.svg"} alt={data.title} className="h-full w-full object-cover" />
+        </div>
+      )}
+      <CardHeader>
+        <CardTitle className="line-clamp-2">{data.title}</CardTitle>
+        <div className="text-xs text-muted-foreground">Type: {data.type}</div>
+      </CardHeader>
+      <CardContent className="flex-grow">
+        {data.description && <p className="text-sm text-muted-foreground line-clamp-3">{data.description}</p>}
+        <div className="mt-2 text-xs text-muted-foreground truncate">
+          <a href={data.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+            {data.url}
+          </a>
+        </div>
+      </CardContent>
+      <CardFooter className="flex flex-col gap-2 pt-2">
+        <Button
+          variant={isAdded ? "secondary" : "outline"}
+          size="sm"
+          className="w-full"
+          onClick={handleAddToSidebar}
+          disabled={isAdded}
+        >
+          {isAdded ? (
+            <>
+              <Check className="h-4 w-4 mr-2" />
+              Added
+            </>
+          ) : (
+            <>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Add to Export
+            </>
+          )}
+        </Button>
+        <a
+          href={data.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex h-9 items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground shadow-sm hover:bg-secondary/90 w-full"
+        >
+          <ExternalLink className="h-4 w-4 mr-2" />
+          Visit
+        </a>
+      </CardFooter>
+    </Card>
+  )
 }
+
