@@ -1,0 +1,14 @@
+name = "opengraph-card-viewer"
+compatibility_date = "2024-04-16"
+
+# This tells Wrangler where your built files are
+build = { command = "npm run build", cwd = ".", watch_dir = "src" }
+
+# Serve the dist folder (output of Vite build)
+[site]
+bucket = "./dist"
+entry-point = "."
+
+# You can set environment variables here
+[vars]
+NODE_ENV = "production"
