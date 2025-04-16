@@ -1,26 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/navbar";
 import { OpenGraphCard } from "@/components/card";
 import { Pagination } from "@/components/pagination";
 import { Sidebar } from "@/components/sidebar";
+import { Toaster } from "@/components/ui/sonner"
 import { UrlProvider } from "@/context/url-context";
 import { EmptyState } from "@/components/empty-state";
 import type { IOpenGraphCard } from "@/types/opengraph";
 
+
+
 export function OpenGraphViewer() {
 	// const [searchQuery, setSearchQuery] = useState("")
+  const [allData, setAllData] = useState<IOpenGraphCard[]>([]);
 	const [currentData, setCurrentData] = useState<IOpenGraphCard[]>([]);
 	const [currentPage, setCurrentPage] = useState(1);
-	const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 	const [sidebarWidth, setSidebarWidth] = useState(256); // Default width of 256px (16rem)
 	const [isLoading, setIsLoading] = useState(false);
 
-	const itemsPerPage = 8;
-	const totalPages = Math.ceil(currentData.length / itemsPerPage);
+	const itemsPerPage = 4 * 4;
+	const totalPages = Math.ceil(allData.length / itemsPerPage);
 
-	// const currentData = allSampleData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  useEffect(() => setCurrentData(allData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)), [allData, currentPage])
 
 	const handleSearch = (query: string) => {
 		setIsLoading(true);
@@ -33,12 +37,9 @@ export function OpenGraphViewer() {
 				return response.json();
 			})
 			.then((data) => {
-				setCurrentData(
-					data.slice(
-						(currentPage - 1) * itemsPerPage,
-						currentPage * itemsPerPage,
-					),
-				);
+        console.log(data.length);
+				setAllData(data);
+        setCurrentPage(1);
 			})
 			.catch((error) => {
 				console.error("There was a problem with the fetch operation:", error);
@@ -128,6 +129,7 @@ export function OpenGraphViewer() {
 						<Sidebar width={sidebarWidth} onWidthChange={setSidebarWidth} />
 					</div>
 				</div>
+        <Toaster position="bottom-right" richColors />
 			</div>
 		</UrlProvider>
 	);

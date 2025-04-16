@@ -14,6 +14,7 @@ export function Sidebar({ width, onWidthChange }: SidebarProps) {
 
   return (
     <div
+      id="sidebar"
       className="border-l bg-muted/40 p-4 overflow-auto h-[calc(100vh-4rem)] relative"
       style={{ width: `${width}px` }}
     >
