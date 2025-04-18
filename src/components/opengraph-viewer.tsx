@@ -5,81 +5,79 @@ import { Navbar } from "@/components/navbar";
 import { OpenGraphCard } from "@/components/card";
 import { Pagination } from "@/components/pagination";
 import { Sidebar } from "@/components/sidebar";
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
 import { UrlProvider } from "@/context/url-context";
 import { EmptyState } from "@/components/empty-state";
 import type { IOpenGraphCard } from "@/types/opengraph";
 import { useNavigate, useSearchParams } from "react-router";
 
-
-
 export function OpenGraphViewer() {
-  const [allData,   setAllData]   = useState<IOpenGraphCard[]>([]);
-  // const [currentData, setCurrentData] = useState<IOpenGraphCard[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+	const [allData, setAllData] = useState<IOpenGraphCard[]>([]);
+	// const [currentData, setCurrentData] = useState<IOpenGraphCard[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
 	const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 	const [sidebarWidth, setSidebarWidth] = useState(256); // Default width of 256px (16rem)
 
-  // ─── Sync currentPage with URL ───────────────────────────────
-  const [searchParams, setSearchParams] = useSearchParams();
-  const qParam = searchParams.get("q") || "";                     // the fetch URL
-  const page = Number.parseInt(searchParams.get("page") ?? "1", 10) || 1;
-  const [lastQuery, setLastQuery] = useState("");  // to avoid refetching same qParam
+	// ─── Sync currentPage with URL ───────────────────────────────
+	const [searchParams, setSearchParams] = useSearchParams();
+	const qParam = searchParams.get("q") || ""; // the fetch URL
+	const page = Number.parseInt(searchParams.get("page") ?? "1", 10) || 1;
+	const [lastQuery, setLastQuery] = useState(""); // to avoid refetching same qParam
 
-  console.log(`Page changed to ${page}`);
+	console.log(`Page changed to ${page}`);
 
-  const itemsPerPage = 16;
-  const totalPages   = Math.ceil(allData.length / itemsPerPage);
+	const itemsPerPage = 16;
+	const totalPages = Math.ceil(allData.length / itemsPerPage);
 
-  // useEffect(() => {
-  //   const start = (page - 1) * itemsPerPage;
-  //   setCurrentData(allData.slice(start, start + itemsPerPage));
-  // }, [allData, page]);
+	// useEffect(() => {
+	//   const start = (page - 1) * itemsPerPage;
+	//   setCurrentData(allData.slice(start, start + itemsPerPage));
+	// }, [allData, page]);
 
-  const handlePageChange = (newPage: number) => {
-    searchParams.set("page", newPage.toString());
-    setSearchParams(searchParams);
-  };
+	const handlePageChange = (newPage: number) => {
+		searchParams.set("page", newPage.toString());
+		setSearchParams(searchParams);
+	};
 
-  useEffect(() => { 
-    if (!qParam || qParam === lastQuery) return;
+	useEffect(() => {
+		if (!qParam || qParam === lastQuery) return;
 
-    setIsLoading(true);
-    fetch(qParam)
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then((data: IOpenGraphCard[]) => {
-        setAllData(data);
-        setLastQuery(qParam);
+		setIsLoading(true);
+		fetch(qParam)
+			.then((res) => {
+				if (!res.ok) throw new Error();
+				return res.json();
+			})
+			.then((data: IOpenGraphCard[]) => {
+				setAllData(data);
+				setLastQuery(qParam);
 
-        // if there was no `page` in the URL, make sure it defaults to 1
-        if (!searchParams.has("page")) {
-          searchParams.set("page", "1");
-          setSearchParams(searchParams, { replace: true });
-        }
-      })
-      .catch(() => {
-        setAllData([]);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, [qParam, lastQuery, setSearchParams])
+				// if there was no `page` in the URL, make sure it defaults to 1
+				if (!searchParams.has("page")) {
+					searchParams.set("page", "1");
+					setSearchParams(searchParams, { replace: true });
+				}
+			})
+			.catch(() => {
+				setAllData([]);
+			})
+			.finally(() => {
+				setIsLoading(false);
+			});
+	}, [qParam, lastQuery, setSearchParams]);
 
-  // 4️⃣ Derived slice of data for the current page
-  const currentData = useMemo(() => {
-    const start = (page - 1) * itemsPerPage;
-    return allData.slice(start, start + itemsPerPage);
-  }, [allData, page]);
+	// 4️⃣ Derived slice of data for the current page
+	const currentData = useMemo(() => {
+		const start = (page - 1) * itemsPerPage;
+		return allData.slice(start, start + itemsPerPage);
+	}, [allData, page]);
 
-  // ─── Fetch & reset to page 1 in URL ───────────────────────────
-  const handleSearch = (url: string) => {
-      // Reset to page 1 and include the new q in the URL
-      setSearchParams({ q: url, page: "1" });
-      // the useEffect above will pick up qParam change and do the fetch
-  };
+	// ─── Fetch & reset to page 1 in URL ───────────────────────────
+	const handleSearch = (url: string) => {
+		// Reset to page 1 and include the new q in the URL
+		setSearchParams({ q: url, page: "1" });
+		// the useEffect above will pick up qParam change and do the fetch
+	};
 
 	const toggleSidebar = () => {
 		setIsSidebarOpen(!isSidebarOpen);
@@ -90,9 +88,9 @@ export function OpenGraphViewer() {
 			<div className="flex min-h-screen flex-col">
 				<Navbar
 					onSearch={handleSearch}
-          currentPage={page}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
+					currentPage={page}
+					totalPages={totalPages}
+					onPageChange={handlePageChange}
 					toggleSidebar={toggleSidebar}
 					isSidebarOpen={isSidebarOpen}
 				/>
@@ -119,8 +117,8 @@ export function OpenGraphViewer() {
 						{isLoading ? (
 							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 								{Array.from({ length: itemsPerPage }).map((_, index) => (
-                  <div
-									  // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+									<div
+										// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 										key={index}
 										className="h-80 rounded-lg bg-muted animate-pulse"
 									/>
@@ -141,11 +139,11 @@ export function OpenGraphViewer() {
 										<OpenGraphCard key={`${item.url}-${index}`} data={item} />
 									))}
 								</div>
-                <Pagination
-                  currentPage={page}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+								<Pagination
+									currentPage={page}
+									totalPages={totalPages}
+									onPageChange={handlePageChange}
+								/>
 							</>
 						)}
 					</main>
@@ -157,7 +155,7 @@ export function OpenGraphViewer() {
 						<Sidebar width={sidebarWidth} onWidthChange={setSidebarWidth} />
 					</div>
 				</div>
-        <Toaster position="bottom-right" richColors />
+				<Toaster position="bottom-right" richColors />
 			</div>
 		</UrlProvider>
 	);

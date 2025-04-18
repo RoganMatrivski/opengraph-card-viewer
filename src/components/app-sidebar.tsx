@@ -15,9 +15,11 @@ import {
 import { Trash } from "lucide-react";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [data, setData] = React.useState(Array.from({ length: 10 }, () =>
-    Math.random().toString(36).substring(2, 10)
-  ))
+	const [data, setData] = React.useState(
+		Array.from({ length: 10 }, () =>
+			Math.random().toString(36).substring(2, 10),
+		),
+	);
 
 	return (
 		<Sidebar {...props}>
@@ -34,9 +36,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 										</SidebarMenuButton>
 										<SidebarMenuAction
 											onClick={() => {
-                        const newData = [...data];
-                        newData.splice(index, 1);
-                        setData(newData);
+												const newData = [...data];
+												newData.splice(index, 1);
+												setData(newData);
 											}}
 										>
 											<Trash /> <span className="sr-only">Add Project</span>
