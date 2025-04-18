@@ -9,7 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { UrlProvider } from "@/context/url-context";
 import { EmptyState } from "@/components/empty-state";
 import type { IOpenGraphCard } from "@/types/opengraph";
-import { useNavigate, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 
 export function OpenGraphViewer() {
 	const [allData, setAllData] = useState<IOpenGraphCard[]>([]);
@@ -64,7 +64,7 @@ export function OpenGraphViewer() {
 			.finally(() => {
 				setIsLoading(false);
 			});
-	}, [qParam, lastQuery, setSearchParams]);
+	}, [qParam, lastQuery, setSearchParams, searchParams, ]);
 
 	// 4️⃣ Derived slice of data for the current page
 	const currentData = useMemo(() => {

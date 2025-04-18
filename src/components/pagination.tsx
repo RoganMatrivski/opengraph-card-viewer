@@ -23,7 +23,6 @@ interface PaginationProps {
 export function Pagination({
 	currentPage,
 	totalPages,
-	onPageChange,
 }: PaginationProps) {
 	const [pageInput, setPageInput] = useState("");
 	const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -54,7 +53,7 @@ export function Pagination({
 
 	useEffect(() => {
 		window.scrollTo({ top: 0, behavior: "smooth" });
-	}, [currentPage]);
+	}, []);
 
 	const handleGoToPage = () => {
 		const pageNumber = Number.parseInt(pageInput, 10);
